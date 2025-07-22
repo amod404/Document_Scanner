@@ -1,16 +1,24 @@
-FROM python:3.10-slim
+# Use slim Python image
+FROM python:3.12-slim
 
-# Install OpenCV dependencies
+# Set the working directory inside the container
+WORKDIR /app
+
+# Install OpenCV dependencies (includes libGL and others)
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-COPY requirements.txt .
+# Install pip dependencies
+COPY server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy entire server code into container
+COPY server/ .
 
+# Expose port FastAPI will run on
+EXPOSE 8000
+
+# Run the FastAPI app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
