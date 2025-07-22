@@ -1,20 +1,24 @@
-# Use the Python 3 alpine official image
-# https://hub.docker.com/_/python
-FROM python:3-alpine
+# Use a slim Python image
+FROM python:3.12-slim
 
+# Install required system packages for OpenCV and image processing
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create and change to the app directory.
+# Set working directory
 WORKDIR /app
 
-# Copy local code to the container image.
+# Copy all files to the container
 COPY . .
 
-# Install project dependencies
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Run the web service on container startup.
-CMD ["hypercorn", "main:app", "--bind", "::"]
+# Expose FastAPI port
+EXPOSE 8000
+
+# Run the FastAPI app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
